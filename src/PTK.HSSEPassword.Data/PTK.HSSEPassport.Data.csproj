@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <PublishTrimmed>false</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+		<PackageReference Include="Azure.Core" Version="1.45.0" />
+		<PackageReference Include="Azure.Identity" Version="1.13.2" />
+		<PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+		<PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.4.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.13" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.13" />
+		<PackageReference Include="Microsoft.Data.SqlClient.SNI" Version="6.0.2" />
+		<PackageReference Include="Microsoft.Data.SqlClient.SNI.runtime" Version="6.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.13">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.ClientModel" Version="1.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PTK.HSSEPassword.Utilities\PTK.HSSEPassport.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; del &quot;$(TargetDir)Azure.Core.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(TargetDir)Azure.Identity.dll&quot; del &quot;$(TargetDir)Azure.Identity.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(TargetDir)System.ClientModel.dll&quot; del &quot;$(TargetDir)System.ClientModel.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(TargetDir)System.Text.Json.dll&quot; del &quot;$(TargetDir)System.Text.Json.dll&quot;" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; (&#xD;&#xA;        echo Deleting Azure.Core.dll&#xD;&#xA;        del &quot;$(TargetDir)Azure.Core.dll&quot;)&#xD;&#xA;        if exist &quot;$(TargetDir)Azure.Identity.dll&quot; (&#xD;&#xA;        echo Deleting Azure.Identity.dll&#xD;&#xA;        del &quot;$(TargetDir)Azure.Identity.dll&quot;)&#xD;&#xA;        if exist &quot;$(TargetDir)System.ClientModel.dll&quot; (&#xD;&#xA;        echo Deleting System.ClientModel.dll&#xD;&#xA;        del &quot;$(TargetDir)System.ClientModel.dll&quot;)&#xD;&#xA;        if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; (&#xD;&#xA;        echo Deleting Microsoft.Data.SqlClient.SNI.dll&#xD;&#xA;        del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;)&#xD;&#xA;        if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; (&#xD;&#xA;        echo Deleting Newtonsoft.Json.Bson.dll&#xD;&#xA;        del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;)&#xD;&#xA;        if exist &quot;$(TargetDir)System.Text.Json.dll&quot; (&#xD;&#xA;        echo Deleting System.Text.Json.dll&#xD;&#xA;        del &quot;$(TargetDir)System.Text.Json.dll&quot;)" />
+  </Target>
+
+  <Target Name="BeforePublish" BeforeTargets="Publish">
+    <Exec Command="if exist &quot;$(OutDir)Azure.Core.dll&quot; del &quot;$(OutDir)Azure.Core.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(OutDir)Azure.Identity.dll&quot; del &quot;$(OutDir)Azure.Identity.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(OutDir)System.ClientModel.dll&quot; del &quot;$(OutDir)System.ClientModel.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;&#xD;&#xA;                   if exist &quot;$(OutDir)System.Text.Json.dll&quot; del &quot;$(OutDir)System.Text.Json.dll&quot;" />
+  </Target>
+
+  <Target Name="AfterPublish" AfterTargets="Publish">
+    <Message Text="AfterPublish target is triggered. Deleting files from $(PublishDir)..." Importance="high" />
+    <ItemGroup>
+      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;&#xD;&#xA;                               $(PublishDir)Azure.Identity.dll;&#xD;&#xA;                               $(PublishDir)System.ClientModel.dll;&#xD;&#xA;                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;&#xD;&#xA;                               $(PublishDir)Newtonsoft.Json.Bson.dll;&#xD;&#xA;                               $(PublishDir)System.Text.Json.dll" />
+    </ItemGroup>
+    <Message Text="Deleting files: @(FilesToDelete)" Importance="high" />
+    <Delete Files="@(FilesToDelete)" Condition="Exists('%(FilesToDelete.FullPath)')" />
+
+    <Exec Command="if not exist $(PublishDir)Azure.Core.dll ( echo Azure.Core.dll was successfully deleted. ) else ( echo Warning: Azure.Core.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Azure.Identity.dll ( echo Azure.Identity.dll was successfully deleted. ) else ( echo Warning: Azure.Identity.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)System.ClientModel.dll ( echo System.ClientModel.dll was successfully deleted. ) else ( echo Warning: System.ClientModel.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Microsoft.Data.SqlClient.SNI.dll ( echo Microsoft.Data.SqlClient.SNI.dll was successfully deleted. ) else ( echo Warning: Microsoft.Data.SqlClient.SNI.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Newtonsoft.Json.Bson.dll ( echo Newtonsoft.Json.Bson.dll was successfully deleted. ) else ( echo Warning: Newtonsoft.Json.Bson.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)System.Text.Json.dll ( echo System.Text.Json.dll was successfully deleted. ) else ( echo Warning: System.Text.Json.dll was not deleted. )" />
+  </Target>
+
+  <Target Name="AfterCopyFilesToPublishDirectory" AfterTargets="CopyFilesToPublishDirectory">
+    <Message Text="AfterCopyFilesToPublishDirectory target is triggered. Checking $(PublishDir) for deletion..." Importance="high" />
+    <ItemGroup>
+      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;&#xD;&#xA;                               $(PublishDir)Azure.Identity.dll;&#xD;&#xA;                               $(PublishDir)System.ClientModel.dll;&#xD;&#xA;                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;&#xD;&#xA;                               $(PublishDir)Newtonsoft.Json.Bson.dll;&#xD;&#xA;                               $(PublishDir)System.Text.Json.dll" />
+    </ItemGroup>
+    <Message Text="Deleting files: @(FilesToDelete)" Importance="high" />
+    <Delete Files="@(FilesToDelete)" Condition="Exists('%(FilesToDelete.FullPath)')" />
+
+    <Exec Command="if not exist $(PublishDir)Azure.Core.dll ( echo Azure.Core.dll was successfully deleted. ) else ( echo Warning: Azure.Core.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Azure.Identity.dll ( echo Azure.Identity.dll was successfully deleted. ) else ( echo Warning: Azure.Identity.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)System.ClientModel.dll ( echo System.ClientModel.dll was successfully deleted. ) else ( echo Warning: System.ClientModel.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Microsoft.Data.SqlClient.SNI.dll ( echo Microsoft.Data.SqlClient.SNI.dll was successfully deleted. ) else ( echo Warning: Microsoft.Data.SqlClient.SNI.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)Newtonsoft.Json.Bson.dll ( echo Newtonsoft.Json.Bson.dll was successfully deleted. ) else ( echo Warning: Newtonsoft.Json.Bson.dll was not deleted. )" />
+    <Exec Command="if not exist $(PublishDir)System.Text.Json.dll ( echo System.Text.Json.dll was successfully deleted. ) else ( echo Warning: System.Text.Json.dll was not deleted. )" />
+  </Target>
+
+</Project>
