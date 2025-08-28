@@ -1,12 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using PTK.HSSEPassport.Api.Data.Dao.Transaction;
 using PTK.HSSEPassport.Api.Domain.Interfaces;
 using PTK.HSSEPassport.Api.Domain.Interfaces.Masterdata;
 using PTK.HSSEPassport.Api.Domain.Models.MasterData;
 using PTK.HSSEPassport.Api.Utilities.Base;
 using PTK.HSSEPassport.Api.Utilities.Constants;
+using PTK.HSSEPassport.Data.Service.Session;
 using PTK.HSSEPassport.Utilities.Base;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PTK.HSSEPassport.Api.Controllers.Masterdata
@@ -23,6 +30,10 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
             _UserRepo = UserRepo;
             //_whatsAppClient = whatsAppClient;
         }
+
+        [Authorize]
+        [HttpGet("AuthStatus")]
+        public IActionResult AuthStatus() => Ok(new { ok = true, utc = DateTime.UtcNow });
 
         [HttpPost("DataTable")]
         public async Task<IActionResult> DataTablePagination(UserDTParamModel param, CancellationToken cancellationToken)
@@ -173,13 +184,13 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
         }
 
 
-
+        [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] UserModel param, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login([FromBody] UserModel param, CancellationToken cancellationToken, [FromServices] ISessionStoreService sessionStore, [FromServices] IConfiguration cfg)
         {
             try
             {
-                //param.Password = EncryptPassword(param.Password ?? GeneralConstant.KODE_DEFAULT);
+                param.Password = EncryptPassword(param.Password ?? GeneralConstant.KODE_DEFAULT);
                 var result = await _UserRepo.Login(param, cancellationToken);
                 if (result == null)
                 {
@@ -197,7 +208,32 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
                 {
                     return StatusCode(500, new { ErrorMsg = result.WrongPss + " Wrong password!", IsSuccess = false });
                 }
-                return Ok(new ReturnJson { Payload = result });
+
+                // ======== SUKSES: daftar sesi & terbitkan JWT ========
+                int userId = result.Id; // pastikan tipe int
+                string sessionId = Guid.NewGuid().ToString("N");
+                string userAgent = Request.Headers["User-Agent"].ToString();
+
+                // simpan sesi aktif (tanpa kadaluarsa server-side)
+                await sessionStore.SetCurrentSessionAsync(userId, sessionId, expiresAt: null, deviceInfo: userAgent);
+
+                // build JWT
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(cfg["Jwt:Key"]!));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var claims = new[] { new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), new Claim(JwtRegisteredClaimNames.Jti, sessionId), new Claim(ClaimTypes.Name, result.Name ?? result.Email ?? result.NIK ?? "User") };
+
+                var token = new JwtSecurityToken(
+                    issuer: cfg["Jwt:Issuer"],
+                    audience: null,
+                    claims: claims,
+                    signingCredentials: creds);
+
+                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+                var payload = result;
+
+                return Ok(new ReturnJson { Payload = payload, Token = jwt, TokenType = "Bearer" });
             }
             catch (DomainLayerException e)
             {
@@ -211,6 +247,39 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
             }
         }
 
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout([FromServices] ISessionStoreService sessionStore, [FromQuery] bool all = false, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                       ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+
+                if (int.TryParse(sub, out var userId))
+                {
+                    if (all)
+                    {
+                        await sessionStore.RevokeCurrentAsync(userId);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(jti))
+                            await sessionStore.RevokeSessionAsync(userId, jti);
+                    }
+                }
+
+                return Ok(new ReturnJson { Payload = new { Message = "Logged out" } });
+            }
+            catch (Exception e)
+            {
+                await SaveAppLog(GetCurrentMethod(), GeneralConstant.NO_TRX_ID, GeneralConstant.FAILED,
+                    cancellationToken, errorMessage: e.InnerException?.Message ?? e.Message, info: "API");
+                return StatusCode(500, new { ErrorMsg = "Logout failed", IsSuccess = false });
+            }
+        }
+
+        [AllowAnonymous]
         [HttpPost("ForgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] UserModel param, CancellationToken cancellationToken)
         {

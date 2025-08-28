@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PTK.HSSEPassport.Api.Data.Dao;
 using PTK.HSSEPassport.Api.Data.Dao.MasterData;
+using PTK.HSSEPassport.Api.Data.Dao.Sessions;
 using PTK.HSSEPassport.Api.Data.Dao.Transaction;
 
 namespace PTK.HSSEPassport.Api.Data.Data
@@ -32,6 +33,10 @@ namespace PTK.HSSEPassport.Api.Data.Data
         public DbSet<Test> Test { get; set; }
         public DbSet<TestDetail> TestDetail { get; set; }
 
+        #endregion
+
+        #region Sessions
+        public DbSet<UserSession> UserSessions { get; set; }
         #endregion
     }
 }

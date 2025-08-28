@@ -17,57 +17,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; del &quot;$(TargetDir)Azure.Core.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(TargetDir)Azure.Identity.dll&quot; del &quot;$(TargetDir)Azure.Identity.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(TargetDir)System.ClientModel.dll&quot; del &quot;$(TargetDir)System.ClientModel.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(TargetDir)System.Text.Json.dll&quot; del &quot;$(TargetDir)System.Text.Json.dll&quot;" />
+    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; del &quot;$(TargetDir)Azure.Core.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(TargetDir)Azure.Identity.dll&quot; del &quot;$(TargetDir)Azure.Identity.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(TargetDir)System.ClientModel.dll&quot; del &quot;$(TargetDir)System.ClientModel.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(TargetDir)System.Text.Json.dll&quot; del &quot;$(TargetDir)System.Text.Json.dll&quot;" />
   </Target>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; (
-        echo Deleting Azure.Core.dll
-        del &quot;$(TargetDir)Azure.Core.dll&quot;)
-        if exist &quot;$(TargetDir)Azure.Identity.dll&quot; (
-        echo Deleting Azure.Identity.dll
-        del &quot;$(TargetDir)Azure.Identity.dll&quot;)
-        if exist &quot;$(TargetDir)System.ClientModel.dll&quot; (
-        echo Deleting System.ClientModel.dll
-        del &quot;$(TargetDir)System.ClientModel.dll&quot;)
-        if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; (
-        echo Deleting Microsoft.Data.SqlClient.SNI.dll
-        del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;)
-        if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; (
-        echo Deleting Newtonsoft.Json.Bson.dll
-        del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;)
-        if exist &quot;$(TargetDir)System.Text.Json.dll&quot; (
-        echo Deleting System.Text.Json.dll
-        del &quot;$(TargetDir)System.Text.Json.dll&quot;)" />
+    <Exec Command="if exist &quot;$(TargetDir)Azure.Core.dll&quot; (&#xA;        echo Deleting Azure.Core.dll&#xA;        del &quot;$(TargetDir)Azure.Core.dll&quot;)&#xA;        if exist &quot;$(TargetDir)Azure.Identity.dll&quot; (&#xA;        echo Deleting Azure.Identity.dll&#xA;        del &quot;$(TargetDir)Azure.Identity.dll&quot;)&#xA;        if exist &quot;$(TargetDir)System.ClientModel.dll&quot; (&#xA;        echo Deleting System.ClientModel.dll&#xA;        del &quot;$(TargetDir)System.ClientModel.dll&quot;)&#xA;        if exist &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot; (&#xA;        echo Deleting Microsoft.Data.SqlClient.SNI.dll&#xA;        del &quot;$(TargetDir)Microsoft.Data.SqlClient.SNI.dll&quot;)&#xA;        if exist &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot; (&#xA;        echo Deleting Newtonsoft.Json.Bson.dll&#xA;        del &quot;$(TargetDir)Newtonsoft.Json.Bson.dll&quot;)&#xA;        if exist &quot;$(TargetDir)System.Text.Json.dll&quot; (&#xA;        echo Deleting System.Text.Json.dll&#xA;        del &quot;$(TargetDir)System.Text.Json.dll&quot;)" />
   </Target>
 
   <Target Name="BeforePublish" BeforeTargets="Publish">
-    <Exec Command="if exist &quot;$(OutDir)Azure.Core.dll&quot; del &quot;$(OutDir)Azure.Core.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(OutDir)Azure.Identity.dll&quot; del &quot;$(OutDir)Azure.Identity.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(OutDir)System.ClientModel.dll&quot; del &quot;$(OutDir)System.ClientModel.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;
-                   if exist &quot;$(OutDir)System.Text.Json.dll&quot; del &quot;$(OutDir)System.Text.Json.dll&quot;" />
+    <Exec Command="if exist &quot;$(OutDir)Azure.Core.dll&quot; del &quot;$(OutDir)Azure.Core.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(OutDir)Azure.Identity.dll&quot; del &quot;$(OutDir)Azure.Identity.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(OutDir)System.ClientModel.dll&quot; del &quot;$(OutDir)System.ClientModel.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot; del &quot;$(OutDir)Microsoft.Data.SqlClient.SNI.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot; del &quot;$(OutDir)Newtonsoft.Json.Bson.dll&quot;&#xD;&#xA;&#xA;                   if exist &quot;$(OutDir)System.Text.Json.dll&quot; del &quot;$(OutDir)System.Text.Json.dll&quot;" />
   </Target>
 
   <Target Name="AfterPublish" AfterTargets="Publish">
     <Message Text="AfterPublish target is triggered. Deleting files from $(PublishDir)..." Importance="high" />
     <ItemGroup>
-      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;
-                               $(PublishDir)Azure.Identity.dll;
-                               $(PublishDir)System.ClientModel.dll;
-                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;
-                               $(PublishDir)Newtonsoft.Json.Bson.dll;
-                               $(PublishDir)System.Text.Json.dll" />
+      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;&#xA;                               $(PublishDir)Azure.Identity.dll;&#xA;                               $(PublishDir)System.ClientModel.dll;&#xA;                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;&#xA;                               $(PublishDir)Newtonsoft.Json.Bson.dll;&#xA;                               $(PublishDir)System.Text.Json.dll" />
     </ItemGroup>
     <Message Text="Deleting files: @(FilesToDelete)" Importance="high" />
     <Delete Files="@(FilesToDelete)" Condition="Exists('%(FilesToDelete.FullPath)')" />
@@ -83,12 +52,7 @@
   <Target Name="AfterCopyFilesToPublishDirectory" AfterTargets="CopyFilesToPublishDirectory">
     <Message Text="AfterCopyFilesToPublishDirectory target is triggered. Checking $(PublishDir) for deletion..." Importance="high" />
     <ItemGroup>
-      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;
-                               $(PublishDir)Azure.Identity.dll;
-                               $(PublishDir)System.ClientModel.dll;
-                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;
-                               $(PublishDir)Newtonsoft.Json.Bson.dll;
-                               $(PublishDir)System.Text.Json.dll" />
+      <FilesToDelete Include="$(PublishDir)Azure.Core.dll;&#xA;                               $(PublishDir)Azure.Identity.dll;&#xA;                               $(PublishDir)System.ClientModel.dll;&#xA;                               $(PublishDir)Microsoft.Data.SqlClient.SNI.dll;&#xA;                               $(PublishDir)Newtonsoft.Json.Bson.dll;&#xA;                               $(PublishDir)System.Text.Json.dll" />
     </ItemGroup>
     <Message Text="Deleting files: @(FilesToDelete)" Importance="high" />
     <Delete Files="@(FilesToDelete)" Condition="Exists('%(FilesToDelete.FullPath)')" />
