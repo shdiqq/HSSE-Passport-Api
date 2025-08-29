@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using PTK.HSSEPassport.Api.Data.Dao.Transaction;
+
 using PTK.HSSEPassport.Api.Domain.Interfaces;
 using PTK.HSSEPassport.Api.Domain.Interfaces.Masterdata;
 using PTK.HSSEPassport.Api.Domain.Models.MasterData;
@@ -10,11 +8,9 @@ using PTK.HSSEPassport.Api.Utilities.Base;
 using PTK.HSSEPassport.Api.Utilities.Constants;
 using PTK.HSSEPassport.Data.Service.Session;
 using PTK.HSSEPassport.Utilities.Base;
-using System.IdentityModel.Tokens.Jwt;
+using PTK.HSSEPassword.Api.Auth;
+
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace PTK.HSSEPassport.Api.Controllers.Masterdata
 {
@@ -31,7 +27,7 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
             //_whatsAppClient = whatsAppClient;
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = SessionAuthenticationHandler.SchemeName)]
         [HttpGet("AuthStatus")]
         public IActionResult AuthStatus() => Ok(new { ok = true, utc = DateTime.UtcNow });
 
@@ -209,31 +205,25 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
                     return StatusCode(500, new { ErrorMsg = result.WrongPss + " Wrong password!", IsSuccess = false });
                 }
 
-                // ======== SUKSES: daftar sesi & terbitkan JWT ========
-                int userId = result.Id; // pastikan tipe int
+                int userId = result.Id;
                 string sessionId = Guid.NewGuid().ToString("N");
                 string userAgent = Request.Headers["User-Agent"].ToString();
 
-                // simpan sesi aktif (tanpa kadaluarsa server-side)
                 await sessionStore.SetCurrentSessionAsync(userId, sessionId, expiresAt: null, deviceInfo: userAgent);
 
-                // build JWT
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(cfg["Jwt:Key"]!));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,              // lindungi dari JS
+                    Secure = true,                // wajib HTTPS di production
+                    SameSite = SameSiteMode.Lax,  // aman untuk sementara (bukan lintas-origin)
+                    Path = "/"
+                };
 
-                var claims = new[] { new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), new Claim(JwtRegisteredClaimNames.Jti, sessionId), new Claim(ClaimTypes.Name, result.Name ?? result.Email ?? result.NIK ?? "User") };
-
-                var token = new JwtSecurityToken(
-                    issuer: cfg["Jwt:Issuer"],
-                    audience: null,
-                    claims: claims,
-                    signingCredentials: creds);
-
-                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+                Response.Cookies.Append("sid", sessionId, cookieOptions);
 
                 var payload = result;
 
-                return Ok(new ReturnJson { Payload = payload, Token = jwt, TokenType = "Bearer" });
+                return Ok(new ReturnJson { Payload = result });
             }
             catch (DomainLayerException e)
             {
@@ -247,27 +237,39 @@ namespace PTK.HSSEPassport.Api.Controllers.Masterdata
             }
         }
 
+        [Authorize(AuthenticationSchemes = SessionAuthenticationHandler.SchemeName)]
         [HttpPost("Logout")]
-        public async Task<IActionResult> Logout([FromServices] ISessionStoreService sessionStore, [FromQuery] bool all = false, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Logout(
+            [FromServices] ISessionStoreService sessionStore,
+            [FromQuery] bool all = false,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                       ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (int.TryParse(sub, out var userId))
+                if (!int.TryParse(userIdStr, out var userId))
+                    return Unauthorized(new { IsSuccess = false, ErrorMsg = "Invalid user id" });
+
+                var sid = User.FindFirst("sid")?.Value ?? Request.Cookies["sid"];
+
+                if (all)
                 {
-                    if (all)
-                    {
-                        await sessionStore.RevokeCurrentAsync(userId);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(jti))
-                            await sessionStore.RevokeSessionAsync(userId, jti);
-                    }
+                    await sessionStore.RevokeCurrentAsync(userId);
                 }
+                else if (!string.IsNullOrWhiteSpace(sid))
+                {
+                    await sessionStore.RevokeSessionAsync(userId, sid);
+                }
+
+                Response.Cookies.Append("sid", "", new CookieOptions
+                {
+                    Expires = DateTimeOffset.UnixEpoch,
+                    Path = "/",
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax
+                });
 
                 return Ok(new ReturnJson { Payload = new { Message = "Logged out" } });
             }

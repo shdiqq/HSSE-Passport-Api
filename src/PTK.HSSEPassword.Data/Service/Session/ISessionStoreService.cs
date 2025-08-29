@@ -7,5 +7,7 @@ namespace PTK.HSSEPassport.Data.Service.Session
     Task<bool> IsCurrentAsync(int userId, string sessionId);
     Task RevokeCurrentAsync(int userId);
     Task RevokeSessionAsync(int userId, string sessionId);
+
+    Task<(int UserId, DateTime IssuedAt, DateTime? ExpiresAt, bool IsActive)?> FindBySessionAsync(string sessionId);
   }
 }
